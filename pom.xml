@@ -20,5 +20,6 @@
 
     <modules>
         <module>exercises-scala</module>
+        <module>exercises-java</module>
     </modules>
 </project>
