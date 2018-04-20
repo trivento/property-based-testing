@@ -13,7 +13,7 @@
 
     <properties>
         <scala.binary.version>2.12</scala.binary.version>
-        <scala.version>2.12.4</scala.version>
+        <scala.version>2.12.5</scala.version>
     </properties>
 
     <dependencies>
@@ -23,15 +23,20 @@
             <version>${scala.version}</version>
         </dependency>
         <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.2.3</version>
+        </dependency>
+        <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_2.12</artifactId>
-            <version>3.0.3</version>
+            <version>3.0.5</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.scalacheck</groupId>
             <artifactId>scalacheck_2.12</artifactId>
-            <version>1.13.4</version>
+            <version>1.13.5</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
