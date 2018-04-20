@@ -15,7 +15,12 @@ public class ActionGenerator extends Generator<Action> {
 
     @Override
     public Action generate(SourceOfRandomness random, GenerationStatus status) {
-        // TODO implement this
-        throw new UnsupportedOperationException("Not yet implemented");
+        boolean isAdd = random.nextBoolean();
+        if (isAdd) {
+            String element = stringGenerator.generate(random, status);
+            return Action.createAddAction(element);
+        } else {
+            return Action.createDeleteAction();
+        }
     }
 }

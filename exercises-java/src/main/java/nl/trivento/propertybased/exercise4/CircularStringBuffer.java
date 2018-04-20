@@ -58,6 +58,9 @@ public class CircularStringBuffer {
      */
     public void add(String elem) {
         Objects.requireNonNull(elem);
+        if (readPosition == writePosition && !isEmpty() ) {
+            incrementReadPosition();
+        }
         array[writePosition] = elem;
         incrementWritePosition();
     }
@@ -69,12 +72,14 @@ public class CircularStringBuffer {
     public String remove() {
         if (isEmpty()) throw new NoSuchElementException("Buffer is empty");
         String result = array[readPosition];
+        array[readPosition] = null;
         incrementReadPosition();
         return result;
     }
 
     public int size() {
         if (isEmpty()) return 0;
+        else if (writePosition == readPosition) return capacity;
         else if (writePosition < readPosition) return capacity - readPosition + writePosition;
         else return writePosition - readPosition;
     }

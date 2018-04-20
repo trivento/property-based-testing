@@ -45,24 +45,37 @@ class SumTest extends FlatSpec with Matchers with GeneratorDrivenPropertyChecks 
 
 
   it should "be cummutative" in {
-    ???
+    forAll { (a: Int, b: Int) =>
+      sum(a, b) shouldBe sum(b, a)
+    }
   }
 
-
   it should "be associative" in {
-    ???
+    forAll { (a: Int, b: Int, c: Int) =>
+      sum(sum(a, b), c) shouldBe sum(a, sum(b, c))
+    }
   }
 
   it should "allow adding 0 (idenity property)" in {
-    ???
+    forAll { a: Int =>
+      sum(a, 0) shouldBe a
+    }
   }
 
   it should "be return 0 when adding the inverse" in {
-    ???
+    forAll { a: Int =>
+      sum(a, -a) shouldBe 0
+    }
   }
 
+  // This last test fails if when very high numbers are used
   it should "return a positive outcome when two positive numbers are added" in {
-    ???
+    val genInt = Gen.chooseNum(0, Int.MaxValue / 2)
+    forAll(genInt, genInt) { (a: Int, b: Int) =>
+      whenever(a >= 0 && b >= 0) {
+        sum(a, b) should be >= 0
+      }
+    }
   }
 
 }

@@ -29,15 +29,19 @@ case class RangeSeq(start: Double, end: Double, step: Double) extends Seq[Double
 
   override def toString(): String = s"RangeSeq($start, $end, $step)"
 
-  override def length: Int = ((end - start) / step).toInt
+  // Counting solution (not as performant since the iterator computes every element)
+  override def length: Int = iterator.length
 
-  override def apply(index: Int): Double = start + (step * index)
+  // Solution (again cheat by using the iterator)
+  override def apply(index: Int): Double = iterator.drop(index).next()
 
   override def iterator: Iterator[Double] = new Iterator[Double] {
     private var current = start
 
-    override def hasNext: Boolean = current < end
-
+    override def hasNext: Boolean = {
+      if (step > 0) current < end
+      else current > end
+    }
     override def next(): Double = {
       val result = current
       current += step
@@ -46,11 +50,10 @@ case class RangeSeq(start: Double, end: Double, step: Double) extends Seq[Double
   }
 
   private def isWithinBoundaries(elem: Double): Boolean =
-  (step > 0.0 && start <= elem && elem <= last ) ||
-    (step < 0.0 &&  last <= elem && elem <= start)
+    (step > 0.0 && start <= elem && elem <= last ) ||
+      (step < 0.0 &&  last <= elem && elem <= start)
 
-  override def contains[A1 >: Double](elem: A1): Boolean = elem match {
-    case d: Double => isWithinBoundaries(d) && (d - start) % step == 0.0
-    case _         => false
-  }
+  // Solution (however not as efficient)
+  override def contains[A1 >: Double](elem: A1): Boolean = iterator.contains(elem)
+
 }

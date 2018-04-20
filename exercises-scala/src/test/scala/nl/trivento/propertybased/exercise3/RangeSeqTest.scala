@@ -39,6 +39,90 @@ class RangeSeqTest extends FlatSpec with Matchers with GeneratorDrivenPropertyCh
 
   //=================================================PROPERTY-BASED-TEST================================================
 
-  // Implement your property based tests here
+  val genSmallDouble: Gen[Double] = Gen.choose(-1000.0, 1000.0)
+  val genSimpleDouble: Gen[Double] = Gen.choose(-100, 100).map(_.toDouble / 10)
 
+
+
+  def rangeSeqGenerator(): Gen[(Double, Double, Double)] = {
+    val genDouble: Gen[Double] = Gen.frequency(
+      1 -> genSimpleDouble,
+      4 -> genSimpleDouble
+    )
+
+    val gen = for{
+      d1 <- genDouble
+      d2 <- genDouble
+      step <- genDouble
+    } yield {
+      val start = if(step > 0.0) Math.min(d1, d2) else Math.max(d1, d2)
+      val end = if(step > 0.0) Math.max(d1, d2) else Math.min(d1, d2)
+      (start, end, step)
+    }
+    gen.suchThat{ case (start, end, step) =>
+      step != 0 &&
+        (step < 0.0 || start <= end) &&
+        (step > 0.0 || start >= end)
+    }
+  }
+
+  "Positive step - The contains method" should "return true for all elements in the iterator" in {
+    forAll(rangeSeqGenerator()){ case (start, end, step) =>
+      val rangeSeq = RangeSeq(start, end, step)
+      whenever(rangeSeq.step > 0.0){
+        for(d <- rangeSeq){
+          rangeSeq.contains(d) shouldBe true
+        }
+      }
+    }
+  }
+
+  "Positive step - The apply method" should "return the same element as the iterator" in {
+    forAll(rangeSeqGenerator()){ case (start, end, step) =>
+      val rangeSeq = RangeSeq(start, end, step)
+      whenever(rangeSeq.step > 0.0){
+        for((d, index) <- rangeSeq.zipWithIndex){
+          rangeSeq.apply(index) shouldBe d
+        }
+      }
+    }
+  }
+
+  "Negative step - The contains method" should "return true for all elements in the iterator" in {
+    forAll(rangeSeqGenerator()){ case (start, end, step) =>
+      val rangeSeq = RangeSeq(start, end, step)
+      whenever(rangeSeq.step < 0.0){
+        for(d <- rangeSeq){
+          rangeSeq.contains(d) shouldBe true
+        }
+      }
+    }
+  }
+
+  "Positive step - The size functionality" should "be equal to all steps in the RangeSeq " in {
+    forAll(rangeSeqGenerator()){ case (start, end, step) =>
+      val rangeSeq = RangeSeq(start, end, step)
+      whenever(rangeSeq.step > 0.0){
+        var i = 0
+        for(d <- rangeSeq){
+          i = i + 1
+        }
+        rangeSeq.length shouldBe i
+      }
+    }
+  }
+
+  "Negative step - The size functionality" should "be equal to all steps in the RangeSeq " in {
+    forAll(rangeSeqGenerator()){ case (start, end, step) =>
+      val rangeSeq = RangeSeq(start, end, step)
+      whenever(rangeSeq.step < 0.0){
+        val list = rangeSeq.iterator.toList
+        var i = 0
+        for(d <- rangeSeq){
+          i = i + 1
+        }
+        rangeSeq.length shouldBe i
+      }
+    }
+  }
 }

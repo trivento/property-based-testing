@@ -17,13 +17,18 @@ public class TransitiveDependencies {
     private static Set<Character> findTransitiveDependencies(char currentKey, Set<Character> acc, Map<Character, Set<Character>> dependencies) {
         if (dependencies.containsKey(currentKey)) {
             Set<Character> directDependencies = dependencies.get(currentKey);
-
-            Set<Character> indirectDependencies = new HashSet<>();
-            for (char key: directDependencies) {
-                indirectDependencies.addAll(findTransitiveDependencies(key, directDependencies, dependencies));
+            if (acc.containsAll(directDependencies)) {
+                return acc;
+            } else {
+                Set<Character> indirectDependencies = new HashSet<>();
+                for (char key: directDependencies) {
+                    Set<Character> newAcc = new HashSet<>(acc);
+                    newAcc.addAll(directDependencies);
+                    indirectDependencies.addAll(findTransitiveDependencies(key, newAcc, dependencies));
+                }
+                indirectDependencies.addAll(directDependencies);
+                return indirectDependencies;
             }
-            indirectDependencies.addAll(directDependencies);
-            return indirectDependencies;
         } else {
             return acc;
         }

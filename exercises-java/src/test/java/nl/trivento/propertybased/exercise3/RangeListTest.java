@@ -40,5 +40,59 @@ public class RangeListTest {
 
     //==============================================PROPERTY-BASED-TESTS================================================
 
-    // Implement your property based tests here
+
+    @Property
+    public void positiveStepContainsProperty(@InRange(minDouble =  -1000.0, maxDouble = 1000.0) double start,
+                                             @InRange(minDouble =  -1000.0, maxDouble = 1000.0) double end,
+                                             @InRange(minDouble =  0.01, maxDouble = 1000.0) double step){
+        assumeTrue("if 'step' is positive 'start' must be smaller or equal to 'end'",  start <= end);
+        RangeList rangeList = new RangeList(start, end, step);
+
+        for(double d: rangeList){
+            assertTrue("contains method should return true for all elements in the iterator, failed for: "+d,rangeList.contains(d));
+        }
+    }
+
+    @Property
+    public void negativeStepContainsProperty(@InRange(minDouble =  -1000.0, maxDouble = 1000.0) double start,
+                                             @InRange(minDouble =  -1000.0, maxDouble = 1000.0) double end,
+                                             @InRange(minDouble =  -1000.0, maxDouble = -0.01) double step){
+        assumeTrue("if 'step' is negative 'start' must be larger or equal to 'end'",  start >= end);
+        RangeList rangeList = new RangeList(start, end, step);
+
+        for(double d: rangeList){
+            assertTrue("contains method should return true for all elements in the iterator, failed for: "+d,rangeList.contains(d));
+        }
+    }
+
+    @Property
+    public void positiveStepSizeProperty(@InRange(minDouble =  -1000.0, maxDouble = 1000.0) double start,
+                                         @InRange(minDouble =  -1000.0, maxDouble = 1000.0) double end,
+                                         @InRange(minDouble =  0.01, maxDouble = 1000.0) double step){
+        assumeTrue("if 'step' is positive 'start' must be smaller or equal to 'end'",  start <= end);
+        RangeList rangeList = new RangeList(start, end, step);
+
+        int size = 0;
+        for(double d: rangeList){
+            size = size + 1;
+        }
+
+        assertEquals(size, rangeList.size());
+    }
+
+    @Property
+    public void negativeStepSizeProperty(@InRange(minDouble =  -1000.0, maxDouble = 1000.0) double start,
+                                         @InRange(minDouble =  -1000.0, maxDouble = 1000.0) double end,
+                                         @InRange(minDouble =  -1000.0, maxDouble = -0.01) double step){
+        assumeTrue("if 'step' is negative 'start' must be larger or equal to 'end'",  start >= end);
+        RangeList rangeList = new RangeList(start, end, step);
+
+        int size = 0;
+        for(double d: rangeList){
+            size = size + 1;
+        }
+
+        assertEquals(size, rangeList.size());
+
+    }
 }

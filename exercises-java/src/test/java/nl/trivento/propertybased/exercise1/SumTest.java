@@ -39,22 +39,24 @@ public class SumTest {
 
 
     @Property public void cummutativeProperty(int a, int b) {
-        fail("Not yet implemented");
+        assertEquals(sum(a, b), sum(b, a));
     }
 
     @Property public void associativeProperty(int a, int b, int c) {
-        fail("Not yet implemented");
+        assertEquals(sum(sum(a, b), c), sum(a, sum(b, c)));
     }
 
     @Property public void identityProperty(int a) {
-        fail("Not yet implemented");
+        assertEquals(sum(a, 0), a);
     }
 
     @Property public void inverseProperty(int a) {
-        fail("Not yet implemented");
+        assertEquals(sum(a, -a), 0);
     }
 
-    @Property public void addingPositiveIntegersShouldBePositive(int a, int b) {
-        fail("Not yet implemented");
+
+    //     This last test fails if no range annotation is used
+    @Property public void addingPositiveIntegersShouldBePositive(@InRange(minInt = 0, maxInt = Integer.MAX_VALUE / 2) int a, @InRange(minInt = 0, maxInt = Integer.MAX_VALUE / 2) int b) {
+        assertTrue(sum(a, b) >= 0);
     }
 }

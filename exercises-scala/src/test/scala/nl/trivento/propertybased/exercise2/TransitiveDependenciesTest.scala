@@ -46,7 +46,7 @@ class TransitiveDependenciesTest extends FlatSpec with Matchers with GeneratorDr
     * A Generator that generates the characters A to Z
     * Hint: Have a look at some of the predefined methods in [[org.scalacheck.Gen]]
     */
-  def genCharacter: Gen[Char] = ???
+  def genCharacter: Gen[Char] = Gen.choose('A', 'Z')
 
   "genCharacter" should "only generate characters in the range from A to Z" in {
     forAll(genCharacter) { char =>
@@ -61,8 +61,8 @@ class TransitiveDependenciesTest extends FlatSpec with Matchers with GeneratorDr
     */
   def genDependencyTuple: Gen[(Char, Set[Char])] = for {
     character <- genCharacter
-    dependencies <- Gen.fail[Set[Char]] // TODO replace Gen.fail with a proper generator
-  } yield ???
+    dependencies <- Gen.listOf(genCharacter)
+  } yield character -> dependencies.toSet
 
 
   "genDependencyTuple" should "only generate characters in the range from A to Z" in {
@@ -79,7 +79,7 @@ class TransitiveDependenciesTest extends FlatSpec with Matchers with GeneratorDr
   /**
     * A Generator that generates a map of dependencies, it may be empty
     */
-  def genDependencyMap: Gen[Map[Char, Set[Char]]] = ???
+  def genDependencyMap: Gen[Map[Char, Set[Char]]] = Gen.mapOf(genDependencyTuple)
 
   "genDependencyMap" should "only generate characters in the range from A to Z" in {
     forAll(genDependencyMap) { map =>
@@ -95,9 +95,64 @@ class TransitiveDependenciesTest extends FlatSpec with Matchers with GeneratorDr
   }
 
 
-  // 2). Properties to verify
-  it should "TODO think of some properties to test" in {
-    ???
+  it should "always return the direct dependencies in the given result (dependency map with single entry)" in {
+    val genDirectDependencies: Gen[(Char, (Char, Set[Char]))] = for {
+      key <- genCharacter
+      dependencies <- Gen.listOf(genCharacter)
+    } yield   {
+      val directDependencies = key -> (dependencies.toSet - key)
+      (key, directDependencies)
+    }
+
+    forAll(genDirectDependencies) {  case (key, directDependencies) =>
+      val result = TransitiveDependencies.findTransitiveDependencies(key, Map(directDependencies))
+      result should contain allElementsOf Map(directDependencies).getOrElse(key, Set.empty)
+    }
   }
 
+  it should "always return the direct dependencies in the given result" in {
+    val genDirectDependencies: Gen[(Char, Map[Char, Set[Char]])] = for {
+      key <- genCharacter
+      dependenciesForKey <- Gen.listOf(genCharacter)
+      otherDependencies <- genDependencyMap
+    } yield   {
+      val directDependencies = dependenciesForKey.toSet - key
+      val completeMap = otherDependencies + (key -> directDependencies)
+      (key, completeMap)
+    }
+
+    forAll(genDirectDependencies) {  case (key, dependencyMap) =>
+      val result = TransitiveDependencies.findTransitiveDependencies(key, dependencyMap)
+      result should contain allElementsOf dependencyMap.getOrElse(key, Set.empty)
+    }
+  }
+
+  it should "always return the direct and indirect dependencies" in {
+    val gen = for {
+      k1 <- genCharacter
+      k2 <- genCharacter
+      k3 <- genCharacter
+      map <- genDependencyMap
+    } yield {
+      // k1 depends on at least k2
+      val k1Dependencies = map.getOrElse(k1, Set.empty) + k2
+      // k2 depends on at least k3
+      val k2Dependencies = map.getOrElse(k2, Set.empty) + k3
+      val combinedMap = map + (k1 -> k1Dependencies) + (k2 -> k2Dependencies)
+      (k1, k2, combinedMap)
+    }
+
+    forAll(gen) { case (k1, k2, map) =>
+      val result = TransitiveDependencies.findTransitiveDependencies(k1, map)
+      whenever(map.contains(k1) && map(k1).contains(k2) && map.contains(k2)) {
+        val directDependencies = map(k1)
+        // We know that k1, depends on k2
+        val indirectDependencies = map(k2)
+
+        val minimumDependencySet = directDependencies ++ indirectDependencies
+
+        result should contain allElementsOf minimumDependencySet
+      }
+    }
+  }
 }

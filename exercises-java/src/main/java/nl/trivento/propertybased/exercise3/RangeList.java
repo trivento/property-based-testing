@@ -1,6 +1,8 @@
 package nl.trivento.propertybased.exercise3;
 
-import java.util.*;
+import java.util.AbstractList;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * An immutable, ordered list of doubles
@@ -15,6 +17,8 @@ import java.util.*;
  *
  */
 public class RangeList extends AbstractList<Double> {
+
+    // this solution is cheating, we simply use the iterator for everything. But the tests are green :)
 
     private final double start;
     private final double end;
@@ -41,24 +45,28 @@ public class RangeList extends AbstractList<Double> {
 
     @Override
     public int size() {
-        return (int) ((end - start) / step);
+        int result = 0;
+        for (Double d : this) {
+            result++;
+        }
+        return result;
     }
 
     @Override
     public Double get(int index) {
-        return start + (step * index);
+        if (index < 0) throw new NoSuchElementException("index " + index + " is negative");
+        int currentIdx = 0;
+        for (Double d : this) {
+            if (currentIdx == index) return d;
+            currentIdx++;
+        }
+        throw new NoSuchElementException("index " + index + " is larger than size");
     }
 
     @Override
     public boolean contains(Object o) {
-        if (o instanceof Double){
-            double d = (Double) o;
-            if(step > 0 && d < start) return false;
-            if(step > 0 && d > end) return false;
-            if(step < 0 && d > start) return false;
-            if(step < 0 && d < end) return false;
-            return ((d - start) % step == 0);
-
+        for (Double d : this) {
+            if (d.equals(o)) return true;
         }
         return false;
     }
@@ -67,10 +75,10 @@ public class RangeList extends AbstractList<Double> {
     public Iterator<Double> iterator() {
         return new Iterator<Double>() {
             double current = start;
-
             @Override
             public boolean hasNext() {
-                return current < end;
+                if (step > 0) return current < end;
+                else return current > end;
             }
 
             @Override

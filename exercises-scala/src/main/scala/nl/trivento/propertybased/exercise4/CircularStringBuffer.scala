@@ -39,6 +39,9 @@ class CircularStringBuffer(capacity: Int) {
     * @param elem The element to add
     */
   def add(elem: String): Unit = {
+    if (readPosition == writePosition && !isEmpty) {
+      incrementReadPosition()
+    }
     array(writePosition) = elem
     incrementWritePosition()
   }
@@ -50,12 +53,14 @@ class CircularStringBuffer(capacity: Int) {
   def remove(): String = {
     if (isEmpty) throw new NoSuchElementException("Buffer is empty")
     val result = array(readPosition)
+    array(readPosition) = null
     incrementReadPosition()
     result
   }
 
 
   def size: Int = if (isEmpty) 0
+  else if (writePosition == readPosition) capacity
   else if (writePosition < readPosition) capacity - readPosition + writePosition
   else writePosition - readPosition
 

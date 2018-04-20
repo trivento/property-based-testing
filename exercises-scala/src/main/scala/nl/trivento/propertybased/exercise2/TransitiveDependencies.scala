@@ -26,8 +26,9 @@ object TransitiveDependencies {
   def findTransitiveDependencies(key: Char, dependencies: Map[Char, Set[Char]]): Set[Char] = {
     def loop(key: Char, acc: Set[Char]): Set[Char] = {
       dependencies.get(key) match {
+        case Some(directDependencies) if directDependencies.diff(acc).isEmpty => acc
         case Some(directDependencies) =>
-          val indirectDependencies: Set[Char] = directDependencies.flatMap(key => loop(key, directDependencies))
+          val indirectDependencies: Set[Char] = directDependencies.flatMap(key => loop(key, acc ++ directDependencies))
           directDependencies ++ indirectDependencies
         case None => acc
       }
